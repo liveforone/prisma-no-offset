@@ -27,13 +27,15 @@
 ## intro
 
 - This package is a utility package that helps you conveniently use no-offset paging when using prisma orm.
-- The package comes with a function that returns a conditional query (usually called ltLastId) that filters an id less than the last id,
+- The package comes with a lastId constant to be used as a query string and a default value constant for lastId,
+- a function that returns a conditional query (usually called ltLastId) that filters an id less than the last id,
 - a function that extracts the last id from the current query data,
 - and a code that casts it as a string type when the bigint type is serialized as json.
 - Because of the bigint type, you can use this package from es2020.
 - If you check the actual code in index.ts, you can see the same annotation as the document.
 - 이 패키지는 prisma orm에서 편리하게 no-offset 페이징을 사용할 수 있도록 도와주는 유틸 패키지입니다.
-- 이 패키지는 last id보다 작은 id를 가진 데이터를 필터링하는 조건절 쿼리 함수와
+- 이 패키지는 쿼리스트링으로 사용될 lastId 상수와 lastId의 기본값 상수,
+- last id보다 작은 id를 가진 데이터를 필터링하는 조건절 쿼리 함수와
 - 조회한 데이터에서 last id를 추출하는 함수,
 - 마지막으로 bigint타입이 json으로 직렬화 될 때, 문자타입(string)으로 자동 캐스팅 시켜주는 코드가 들어있습니다.
 - bigint타입 때문에 es2020부터 해당 패키지를 사용하실 수 있습니다.
@@ -212,8 +214,9 @@ async getOptimizedPostPageByWriterId(writerId: string, lastId: bigint) {
 ```typescript
 @Get() // url : /posts
 async allPosts(
-    //PostControllerConstant.LAST_ID = lastId
-    @Query(PostControllerConstant.LAST_ID) lastId: bigint = BigInt(0),
+    //LAST_ID = lastId
+    //DEFAULT_LAST_ID = BigInt(0)
+    @Query(LAST_ID) lastId: bigint = DEFAULT_LAST_ID,
 ) {
     return this.postService.getAllOptimizedPostPage(lastId);
 }
@@ -222,8 +225,9 @@ async allPosts(
 async myPosts(
     //PostControllerConstant.WRITER_ID = writerId
     @Query(PostControllerConstant.WRITER_ID) writerId: string,
-    //PostControllerConstant.LAST_ID = lastId
-    @Query(PostControllerConstant.LAST_ID) lastId: bigint = BigInt(0),
+    //LAST_ID = lastId
+    //DEFAULT_LAST_ID = BigInt(0)
+    @Query(LAST_ID) lastId: bigint = DEFAULT_LAST_ID,
 ) {
     return await this.postService.getOptimizedPostPageByWriterId(
       writerId,
@@ -329,8 +333,9 @@ async getOptimizedPostPageByWriterId(writerId: string, lastId: bigint) {
 ```typescript
 @Get() // url : /posts
 async allPosts(
-    //PostControllerConstant.LAST_ID = lastId
-    @Query(PostControllerConstant.LAST_ID) lastId: bigint = BigInt(0),
+    //LAST_ID = lastId
+    //DEFAULT_LAST_ID = BigInt(0)
+    @Query(LAST_ID) lastId: bigint = DEFAULT_LAST_ID,
 ) {
     return this.postService.getAllOptimizedPostPage(lastId);
 }
@@ -339,8 +344,9 @@ async allPosts(
 async myPosts(
     //PostControllerConstant.WRITER_ID = writerId
     @Query(PostControllerConstant.WRITER_ID) writerId: string,
-    //PostControllerConstant.LAST_ID = lastId
-    @Query(PostControllerConstant.LAST_ID) lastId: bigint = BigInt(0),
+    //LAST_ID = lastId
+    //DEFAULT_LAST_ID = BigInt(0)
+    @Query(LAST_ID) lastId: bigint = DEFAULT_LAST_ID,
 ) {
     return await this.postService.getOptimizedPostPageByWriterId(
       writerId,

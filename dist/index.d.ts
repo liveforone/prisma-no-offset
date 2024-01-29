@@ -1,4 +1,22 @@
 /**
+ * <ENG>
+ * The two constants below are the lastId constant and the default constant of lastId that will be used as the query string in the controller.
+ * You don't need to define a constant directly, you can use the constant defined below.
+ * Because you specified the default, for the first page,
+ * the default is automatically inserted without the client specifying the lastId query string, enabling normal no-offset paging.
+ * ex) : @Query(LAST_ID) lastId: bigint = DEFAULT_LAST_ID
+ */
+/**
+ * <KOR>
+ * 아래의 두 상수는 controller에서 쿼리 스트링으로 사용될 lastId 상수와 lastId의 기본값 상수입니다.
+ * 상수를 직접 정의할 필요없이, 아래에 정의된 상수를 사용하시면 됩니다.
+ * 기본값을 지정했기 때문에 첫번째 페이지의 경우,
+ * 클라이언트가 lastId 쿼리스트링을 지정하지 않아도 자동으로 기본값이 삽입되어 정상적인 no-offset 페이징이 가능해집니다.
+ * ex) : @Query(LAST_ID) lastId: bigint = DEFAULT_LAST_ID
+ */
+declare const LAST_ID = "lastId";
+declare const DEFAULT_LAST_ID: bigint;
+/**
  *
  * @param lastId
  * @returns prisma where condition
@@ -62,4 +80,4 @@ declare function ltLastIdCondition(lastId: bigint): {
  * 예제 : metadata: { lastId: findLastIdOrDefault(posts) },
  */
 declare function findLastIdOrDefault(foundDatas: any[]): any;
-export { ltLastIdCondition, findLastIdOrDefault };
+export { LAST_ID, DEFAULT_LAST_ID, ltLastIdCondition, findLastIdOrDefault };
