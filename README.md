@@ -26,14 +26,14 @@
 
 ## intro
 
-- This package is a utility package that helps you conveniently use no-offset paging when using prisma orm.
+- This package is a utility package that helps you conveniently use no-offset paging(called cursor based, infinite scroll or keyset pagination) when using prisma orm.
 - The package comes with a lastId constant to be used as a query string and a default value constant for lastId,
 - a function that returns a conditional query (usually called ltLastId) that filters an id less than the last id,
 - a function that extracts the last id from the current query data,
 - and a code that casts it as a string type when the bigint type is serialized as json.
 - Because of the bigint type, you can use this package from es2020.
 - If you check the actual code in index.ts, you can see the same annotation as the document.
-- 이 패키지는 prisma orm에서 편리하게 no-offset 페이징을 사용할 수 있도록 도와주는 유틸 패키지입니다.
+- 이 패키지는 prisma orm에서 편리하게 no-offset 페이징(무한 스크롤, 커서 기반 페이징이라 불리기도 한다)을 사용할 수 있도록 도와주는 유틸 패키지입니다.
 - 이 패키지는 쿼리스트링으로 사용될 lastId 상수와 lastId의 기본값 상수,
 - last id보다 작은 id를 가진 데이터를 필터링하는 조건절 쿼리 함수와
 - 조회한 데이터에서 last id를 추출하는 함수,
