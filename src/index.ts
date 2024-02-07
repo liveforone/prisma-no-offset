@@ -18,6 +18,7 @@ const DEFAULT_LAST_ID = BigInt(0);
 
 /**
  *
+ * You must use this function when sorting data in descending order.
  * This function is a utility function used to create a clause in the no offset paging based on the descending order of id.
  * The id must be set to the bigint type.
  * Returns an empty query if the lastId is 0 or less than 0(less than & euqal == lte). prisma ignores this empty query.
@@ -26,14 +27,33 @@ const DEFAULT_LAST_ID = BigInt(0);
  * However, when using multiple conditions, it is desirable to filter the necessary conditions and then call the function as the last condition.
  * Because if there's a lot of data in the database and the current page is a relatively recent page,
  * Calling this function first is not at all efficient because all data that meet conditions less than id are filtered first.
- * ex1(single condition) : where: lastIdCondition
- * ex2(multiple condition) : where: { AND: [{ column: agrs }, lastIdCondition], },
+ * ex1(single condition) : where: ltLastIdCondition(lastId)
+ * ex2(multiple condition) : where: { AND: [{ column: agrs }, ltLastIdCondition(lastid)], },
  */
 function ltLastIdCondition(lastId: bigint) {
   if (lastId <= BigInt(0)) {
     return {};
   }
   return { id: { lt: lastId } };
+}
+
+/**
+ *
+ * You must use this function when sorting data in ascending order.
+ * This function is a utility function used to create a clause in the no offset paging based on the ascending order of id.
+ * The id must be set to the bigint type.
+ * Returns an empty query if the lastId is 0 or less than 0(less than & euqal == lte). prisma ignores this empty query.
+ * If a normal lastId comes in, this function looks for id less than lastId.
+ * When you use this utility function in a single condition, you just need to call the function.
+ * However, when using multiple conditions, it is desirable to filter the necessary conditions and then call the function as the last condition.
+ * Because if there's a lot of data in the database and the current page is a relatively recent page,
+ * Calling this function first is not at all efficient because all data that meet conditions greater than id are filtered first.
+ */
+function gtLastIdCondition(lastId: bigint) {
+  if (lastId <= BigInt(0)) {
+    return {};
+  }
+  return { id: { gt: lastId } };
 }
 
 /**
@@ -55,4 +75,10 @@ function findLastIdOrDefault(foundDatas: any[]) {
   return lastData.id;
 }
 
-export { LAST_ID, DEFAULT_LAST_ID, ltLastIdCondition, findLastIdOrDefault };
+export {
+  LAST_ID,
+  DEFAULT_LAST_ID,
+  ltLastIdCondition,
+  gtLastIdCondition,
+  findLastIdOrDefault,
+};

@@ -1,5 +1,7 @@
 # prisma-no-offset
 
+> Supports both no-offset paging for ascending and descending order.
+
 ## Contents
 
 - [prisma-no-offset](#prisma-no-offset)
@@ -8,10 +10,12 @@
   - [docs: ENG](#docs-eng)
     - [Bigint to string in Json serialization](#bigint-to-string-in-json-serialization)
     - [ltLastIdCondition - less than last id filtering fuction](#ltlastidcondition---less-than-last-id-filtering-fuction)
+    - [gtLastIdCondition - greater than last id filtering fuction](#gtlastidcondition---greater-than-last-id-filtering-fuction)
     - [findLastIdOrDefault - find last id in found data](#findlastidordefault---find-last-id-in-found-data)
   - [docs: KOR](#docs-kor)
     - [Bigint json 직렬화시 string으로 캐스팅 코드](#bigint-json-직렬화시-string으로-캐스팅-코드)
     - [ltLastIdCondition - last id보다 작은 id 필터링 함수](#ltlastidcondition---last-id보다-작은-id-필터링-함수)
+    - [gtLastIdCondition - last id보다 큰 id 필터링 함수](#gtlastidcondition---last-id보다-큰-id-필터링-함수)
     - [findLastIdOrDefault - 조회한 데이터에서 last id를 찾는 함수](#findlastidordefault---조회한-데이터에서-last-id를-찾는-함수)
   - [Example - ENG](#example---eng)
     - [Dto](#dto)
@@ -27,15 +31,19 @@
 ## intro
 
 - This package is a utility package that helps you conveniently use no-offset paging(called cursor based, infinite scroll or keyset pagination) when using prisma orm.
-- The package comes with a lastId constant to be used as a query string and a default value constant for lastId,
-- a function that returns a conditional query (usually called ltLastId) that filters an id less than the last id,
+- The package contains a lastId constant to be used as a query string and a default value constant for lastId,
+- a conditional query function(usually called ltLastId) that filters data with an id less than the last id in descending order,
+- a conditional query function(usally called gtLastId) that filters data with an id greater than the last id in ascending order,
 - a function that extracts the last id from the current query data,
 - and a code that casts it as a string type when the bigint type is serialized as json.
-- Because of the bigint type, you can use this package from es2020.
+- Because of the bigint type, the package will be available starting in es2020.
 - If you check the actual code in index.ts, you can see the same annotation as the document.
+- If you are using ascending sort, look at the `gtLastIdCondition` document.
+- If you are using descending sort, look at the `ltLastIdCondition` document.
 - 이 패키지는 prisma orm에서 편리하게 no-offset 페이징(무한 스크롤, 커서 기반 페이징이라 불리기도 한다)을 사용할 수 있도록 도와주는 유틸 패키지입니다.
 - 이 패키지는 쿼리스트링으로 사용될 lastId 상수와 lastId의 기본값 상수,
-- last id보다 작은 id를 가진 데이터를 필터링하는 조건절 쿼리 함수와
+- 내림차순 정렬에서 사용되는 last id보다 작은 id를 가진 데이터를 필터링하는 조건절 쿼리 함수와
+- 오름차순 정렬에서 사용되는 last id보다 큰 id를 가진 데이터를 필터링 하는 조건절 쿼리 함수와
 - 조회한 데이터에서 last id를 추출하는 함수,
 - 마지막으로 bigint타입이 json으로 직렬화 될 때, 문자타입(string)으로 자동 캐스팅 시켜주는 코드가 들어있습니다.
 - bigint타입 때문에 es2020부터 해당 패키지를 사용하실 수 있습니다.
@@ -50,6 +58,7 @@
 
 ### ltLastIdCondition - less than last id filtering fuction
 
+- **You must use this function when sorting data in descending order.**
 - This function is a utility function used to create a clause in the no offset paging based on the descending order of id.
 - The id must be set to the bigint type.
 - Returns an empty query if the lastId is 0 or less than 0(less than & euqal == lte). prisma ignores this empty query.
@@ -61,10 +70,30 @@
 
 ```typescript
 //single condition
-where: lastIdCondition
+where: ltLastIdCondition(lastId)
 
 //multiple condition
-where: { AND: [{ column: agrs }, lastIdCondition], },
+where: { AND: [{ column: agrs }, ltLastIdCondition(lastId)], },
+```
+
+### gtLastIdCondition - greater than last id filtering fuction
+
+- **You must use this function when sorting data in ascending order.**
+- This function is a utility function used to create a clause in the no offset paging based on the ascending order of id.
+- The id must be set to the bigint type.
+- Returns an empty query if the lastId is 0 or less than 0(less than & euqal == lte). prisma ignores this empty query.
+- If a normal lastId comes in, this function looks for id less than lastId.
+- When you use this utility function in a single condition, you just need to call the function.
+- However, when using multiple conditions, it is desirable to filter the necessary conditions and then call the function as the last condition.
+- Because if there's a lot of data in the database and the current page is a relatively recent page,
+- Calling this function first is not at all efficient because all data that meet conditions greater than id are filtered first.
+
+```typescript
+//single condition
+where: gtLastIdCondition(lastId)
+
+//multiple condition
+where: { AND: [{ column: agrs }, gtLastIdCondition(lastId)], },
 ```
 
 ### findLastIdOrDefault - find last id in found data
@@ -88,6 +117,7 @@ metadata: { lastId: findLastIdOrDefault(posts) },
 
 ### ltLastIdCondition - last id보다 작은 id 필터링 함수
 
+- **내림차순 정렬을 사용하고 있다면 반드시 이 함수를 사용해야합니다.**
 - 이 함수는 id 내림차순 기반의 No offset 페이징의 where절을 만드는데 사용하는 유틸함수입니다.
 - id는 반드시 bigint 타입으로 구성해야합니다.
 - lastId가 0혹은 0보다 작을경우 빈 쿼리를 리턴합니다. prisma는 이 빈쿼리를 무시합니다.
@@ -99,10 +129,30 @@ metadata: { lastId: findLastIdOrDefault(posts) },
 
 ```typescript
 //단일 조건
-where: lastIdCondition
+where: ltLastIdCondition(lastId)
 
 //다중 조건
-where: { AND: [{ column: agrs }, lastIdCondition], },
+where: { AND: [{ column: agrs }, ltLastIdCondition(lastId)], },
+```
+
+### gtLastIdCondition - last id보다 큰 id 필터링 함수
+
+- **오름차순 정렬을 사용하고 있다면 반드시 이 함수를 사용해야합니다.**
+- 이 함수는 id 오름차순 기반의 No offset 페이징의 where절을 만드는데 사용하는 유틸함수입니다.
+- id는 반드시 bigint 타입으로 구성해야합니다.
+- lastId가 0혹은 0보다 작을경우 빈 쿼리를 리턴합니다. prisma는 이 빈쿼리를 무시합니다.
+- 정상적인 lastId가 들어온다면, lastId 보다 큰 id를 기준으로 찾도록 합니다.
+- 이 유틸함수를 단일 조건에서 사용할 때는 큰 문제없이 함수를 호출하면됩니다.
+- 그러나 여러 조건에서 사용할 때에는 필요한 조건들을 필터링한 후, 맨 마지막 조건으로 함수를 호출하는 것이 바람직합니다.
+- 왜냐하면 많은 양의 데이터가 존재할 경우 현재 페이지가 비교적 최근 페이지라면,
+- 이 함수를 먼저 호출하게되면 id보다 큰 조건에 부합하는 모든 데이터가 먼저 필터링 되기 때문에 전혀 효율적이지 않습니다.
+
+```typescript
+//단일 조건
+where: gtLastIdCondition(lastId)
+
+//다중 조건
+where: { AND: [{ column: agrs }, gtLastIdCondition(lastId)], },
 ```
 
 ### findLastIdOrDefault - 조회한 데이터에서 last id를 찾는 함수
@@ -143,7 +193,7 @@ export interface PostOptimizedPageDto {
 
 ### Repository
 
-- Single Condition
+- Single Condition & descending order
 
 ```typescript
 async findAllOptimizedPostPage(
@@ -165,7 +215,7 @@ async findAllOptimizedPostPage(
 }
 ```
 
-- Multiple Condition
+- Multiple Condition & descending order
 
 ```typescript
 async findOptimizedPostPageByWriterId(
@@ -181,6 +231,54 @@ async findOptimizedPostPageByWriterId(
       },
       select: { id: true, title: true, writer_id: true, created_date: true },
       orderBy: { id: 'desc' },
+      take: PostRepoConstant.PAGE_SIZE, //The limit page size must be specified. PostRepoConstant.PAGE_SIZE = 10
+    });
+    return {
+      postPages: posts,
+      //I inserted the last id in the metadata.
+      metadata: { lastId: findLastIdOrDefault(posts) },
+    };
+}
+```
+
+- Single Condition & ascending order
+
+```typescript
+async findAllOptimizedPostPage(
+    lastId: bigint,
+): Promise<PostOptimizedPageDto> {
+    //call gtLastIdCondition function
+    const lastIdCondition = gtLastIdCondition(lastId);
+    const posts: PostPage[] = await this.prisma.post.findMany({
+      where: lastIdCondition,
+      select: { id: true, title: true, writer_id: true, created_date: true },
+      orderBy: { id: 'asc' },
+      take: PostRepoConstant.PAGE_SIZE, //The limit page size must be specified. PostRepoConstant.PAGE_SIZE = 10
+    });
+    return {
+      postPages: posts,
+      //I inserted the last id in the metadata.
+      metadata: { lastId: findLastIdOrDefault(posts) },
+    };
+}
+```
+
+- Multiple Condition & ascending order
+
+```typescript
+async findOptimizedPostPageByWriterId(
+    writerId: string,
+    lastId: bigint,
+): Promise<PostOptimizedPageDto> {
+    const lastIdCondition = gtLastIdCondition(lastId);
+    const posts: PostPage[] = await this.prisma.post.findMany({
+        //Multiple conditions use and queries.
+        //As described in the description, gtLastId is most efficient to use as the last condition.
+      where: {
+        AND: [{ writer_id: writerId }, lastIdCondition],
+      },
+      select: { id: true, title: true, writer_id: true, created_date: true },
+      orderBy: { id: 'asc' },
       take: PostRepoConstant.PAGE_SIZE, //The limit page size must be specified. PostRepoConstant.PAGE_SIZE = 10
     });
     return {
@@ -262,7 +360,7 @@ export interface PostOptimizedPageDto {
 
 ### Repository
 
-- Single Condition
+- 단일 조건 & 내림차순 정렬
 
 ```typescript
 async findAllOptimizedPostPage(
@@ -284,7 +382,7 @@ async findAllOptimizedPostPage(
 }
 ```
 
-- Multiple Condition
+- 다중 조건 & 내림차순 정렬
 
 ```typescript
 async findOptimizedPostPageByWriterId(
@@ -300,6 +398,54 @@ async findOptimizedPostPageByWriterId(
       },
       select: { id: true, title: true, writer_id: true, created_date: true },
       orderBy: { id: 'desc' },
+      take: PostRepoConstant.PAGE_SIZE, //리밋 페이지 사이즈는 기호에 맞게 반드시 정의하시기 바랍니다. PostRepoConstant.PAGE_SIZE = 10
+    });
+    return {
+      postPages: posts,
+      //필자의 경우 last id를 meta data에 삽입하였습니다.
+      metadata: { lastId: findLastIdOrDefault(posts) },
+    };
+}
+```
+
+- 단일 조건 & 오름차순 정렬
+
+```typescript
+async findAllOptimizedPostPage(
+    lastId: bigint,
+): Promise<PostOptimizedPageDto> {
+    //gtLastIdCondition 함수 호출
+    const lastIdCondition = gtLastIdCondition(lastId);
+    const posts: PostPage[] = await this.prisma.post.findMany({
+      where: lastIdCondition,
+      select: { id: true, title: true, writer_id: true, created_date: true },
+      orderBy: { id: 'asc' },
+      take: PostRepoConstant.PAGE_SIZE, //리밋 페이지 사이즈는 기호에 맞게 반드시 정의하시기 바랍니다. PostRepoConstant.PAGE_SIZE = 10
+    });
+    return {
+      postPages: posts,
+      //필자의 경우 last id를 meta data에 삽입하였습니다.
+      metadata: { lastId: findLastIdOrDefault(posts) },
+    };
+}
+```
+
+- 다중 조건 & 오름차순 정렬
+
+```typescript
+async findOptimizedPostPageByWriterId(
+    writerId: string,
+    lastId: bigint,
+): Promise<PostOptimizedPageDto> {
+    const lastIdCondition = gtLastIdCondition(lastId);
+    const posts: PostPage[] = await this.prisma.post.findMany({
+        //다중 조건에서는 and 쿼리를 이용합니다.
+        //설명에서 기술했듯이 gtLastId는 맨 마지막 조건으로 사용하는 것이 가장 효율적입니다.
+      where: {
+        AND: [{ writer_id: writerId }, lastIdCondition],
+      },
+      select: { id: true, title: true, writer_id: true, created_date: true },
+      orderBy: { id: 'asc' },
       take: PostRepoConstant.PAGE_SIZE, //리밋 페이지 사이즈는 기호에 맞게 반드시 정의하시기 바랍니다. PostRepoConstant.PAGE_SIZE = 10
     });
     return {
