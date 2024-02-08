@@ -6,6 +6,7 @@
 
 - [prisma-no-offset](#prisma-no-offset)
   - [Contents](#contents)
+  - [Why I made this?](#why-i-made-this)
   - [intro](#intro)
   - [docs: ENG](#docs-eng)
     - [Bigint to string in Json serialization](#bigint-to-string-in-json-serialization)
@@ -27,6 +28,29 @@
     - [Repository](#repository-1)
     - [Service](#service-1)
     - [Controller](#controller-1)
+
+## Why I made this?
+
+- Prisma has the grammar of `cursor`, but you have to use the code `skip: 1` together to use it.
+- But this code skips the first data even when there is no lastId,
+- So `skip: lastId ? 1 : 0, ...(lastId && {cursor: { id: lastId }})`
+- it will work normally only when these codes are added.
+- Because of this inconvenience, a library was created to allow simple curser-based paging.
+
+```typescript
+//before - prisma provides
+findMany({
+  take: 10, //limit
+  skip: 1,
+  cursor: { id: lastId },
+});
+
+//after - use prisma-no-offset
+findMany({
+  where: ltLastIdCondition(lastId),
+  take: 10,
+});
+```
 
 ## intro
 
