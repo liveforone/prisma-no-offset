@@ -40,9 +40,9 @@
 ```typescript
 //before - prisma provides
 findMany({
-  take: 10, //limit
-  skip: 1,
-  cursor: { id: lastId },
+  take: 10,
+  skip: lastId ? 1 : 0,
+  ...(lastId && { cursor: { id: lastId } }),
 });
 
 //after - use prisma-no-offset
