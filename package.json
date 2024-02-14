@@ -1,6 +1,6 @@
 {
   "name": "prisma-no-offset",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "This package is a utility package that helps you conveniently use no-offset paging when using prisma orm.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "yeongchan kim",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "typescript": "^5.3.3"
   },
