@@ -2,9 +2,13 @@
 
 > Supports both no-offset paging for ascending and descending order.
 
+#### Notice
+
+Built for developers using prisma and nestjs. However, even without using nestjs, examples can be applied to most backend/full stack frameworks.
+
 ## Contents
 
-- [prisma-no-offset](#prisma-no-offset)
+- [prisma-no-offset](#prisma-no-offset) - [notice](#notice)
   - [Contents](#contents)
   - [Why I made this?](#why-i-made-this)
   - [intro](#intro)
@@ -330,6 +334,7 @@ async getOptimizedPostPageByWriterId(writerId: string, lastId: bigint) {
 
 ### Controller
 
+- You must receive a query string named 'lastId'.
 - For the first page, the client does not need to use lastId in the query string.
 - Instead, set 0 as the default value for last id. In this package, last id=0 means the first page.
 
@@ -497,6 +502,7 @@ async getOptimizedPostPageByWriterId(writerId: string, lastId: bigint) {
 
 ### Controller
 
+- lastId 쿼리스트링을 반드시 받아야합니다.
 - 첫번째 페이지의 경우 클라이언트는 lastId를 쿼리스트링에 사용하지 않아도 됩니다.
 - 대신 last id의 기본값으로 0을 설정해줍니다. 이 패키지에서 last id=0의 의미는 첫번째 페이지라는 의미를 지닙니다.
 
