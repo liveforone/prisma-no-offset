@@ -21,12 +21,12 @@ declare const DEFAULT_LAST_ID: bigint;
  * ex1(single condition) : where: ltLastIdCondition(lastId)
  * ex2(multiple condition) : where: { AND: [{ column: agrs }, ltLastIdCondition(lastid)], },
  */
-declare function ltLastIdCondition(lastId: bigint): {
-    id?: undefined;
-} | {
+declare function ltLastIdCondition(lastId: bigint | null): {
     id: {
         lt: bigint;
     };
+} | {
+    id?: undefined;
 };
 /**
  *
@@ -40,12 +40,12 @@ declare function ltLastIdCondition(lastId: bigint): {
  * Because if there's a lot of data in the database and the current page is a relatively recent page,
  * Calling this function first is not at all efficient because all data that meet conditions greater than id are filtered first.
  */
-declare function gtLastIdCondition(lastId: bigint): {
-    id?: undefined;
-} | {
+declare function gtLastIdCondition(lastId: bigint | null): {
     id: {
         gt: bigint;
     };
+} | {
+    id?: undefined;
 };
 /**
  *

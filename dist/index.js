@@ -34,10 +34,7 @@ exports.DEFAULT_LAST_ID = DEFAULT_LAST_ID;
  * ex2(multiple condition) : where: { AND: [{ column: agrs }, ltLastIdCondition(lastid)], },
  */
 function ltLastIdCondition(lastId) {
-    if (lastId <= BigInt(0)) {
-        return {};
-    }
-    return { id: { lt: lastId } };
+    return lastId && lastId > BigInt(0) ? { id: { lt: lastId } } : {};
 }
 exports.ltLastIdCondition = ltLastIdCondition;
 /**
@@ -53,10 +50,7 @@ exports.ltLastIdCondition = ltLastIdCondition;
  * Calling this function first is not at all efficient because all data that meet conditions greater than id are filtered first.
  */
 function gtLastIdCondition(lastId) {
-    if (lastId <= BigInt(0)) {
-        return {};
-    }
-    return { id: { gt: lastId } };
+    return lastId && lastId > BigInt(0) ? { id: { gt: lastId } } : {};
 }
 exports.gtLastIdCondition = gtLastIdCondition;
 /**

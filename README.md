@@ -89,7 +89,7 @@ findMany({
 - **You must use this function when sorting data in descending order.**
 - This function is a utility function used to create a clause in the no offset paging based on the descending order of id.
 - The id must be set to the bigint type.
-- Returns an empty query if the lastId is 0 or less than 0(less than & euqal == lte). prisma ignores this empty query.
+- Returns an empty query if the lastId is null, 0 or less than 0(less than & euqal == lte). prisma ignores this empty query.
 - If a normal lastId comes in, this function looks for id less than lastId.
 - When you use this utility function in a single condition, you just need to call the function.
 - However, when using multiple conditions, it is desirable to filter the necessary conditions and then call the function as the last condition.
@@ -109,7 +109,7 @@ where: { AND: [{ column: agrs }, ltLastIdCondition(lastId)], },
 - **You must use this function when sorting data in ascending order.**
 - This function is a utility function used to create a clause in the no offset paging based on the ascending order of id.
 - The id must be set to the bigint type.
-- Returns an empty query if the lastId is 0 or less than 0(less than & euqal == lte). prisma ignores this empty query.
+- Returns an empty query if the lastId is null, 0 or less than 0(less than & euqal == lte). prisma ignores this empty query.
 - If a normal lastId comes in, this function looks for id less than lastId.
 - When you use this utility function in a single condition, you just need to call the function.
 - However, when using multiple conditions, it is desirable to filter the necessary conditions and then call the function as the last condition.
@@ -148,7 +148,7 @@ metadata: { lastId: findLastIdOrDefault(posts) },
 - **내림차순 정렬을 사용하고 있다면 반드시 이 함수를 사용해야합니다.**
 - 이 함수는 id 내림차순 기반의 No offset 페이징의 where절을 만드는데 사용하는 유틸함수입니다.
 - id는 반드시 bigint 타입으로 구성해야합니다.
-- lastId가 0혹은 0보다 작을경우 빈 쿼리를 리턴합니다. prisma는 이 빈쿼리를 무시합니다.
+- lastId가 null, 0 혹은 0보다 작을경우 빈 쿼리를 리턴합니다. prisma는 이 빈쿼리를 무시합니다.
 - 정상적인 lastId가 들어온다면, lastId 보다 작은 id를 기준으로 찾도록 합니다.
 - 이 유틸함수를 단일 조건에서 사용할 때는 큰 문제없이 함수를 호출하면됩니다.
 - 그러나 여러 조건에서 사용할 때에는 필요한 조건들을 필터링한 후, 맨 마지막 조건으로 함수를 호출하는 것이 바람직합니다.
@@ -168,7 +168,7 @@ where: { AND: [{ column: agrs }, ltLastIdCondition(lastId)], },
 - **오름차순 정렬을 사용하고 있다면 반드시 이 함수를 사용해야합니다.**
 - 이 함수는 id 오름차순 기반의 No offset 페이징의 where절을 만드는데 사용하는 유틸함수입니다.
 - id는 반드시 bigint 타입으로 구성해야합니다.
-- lastId가 0혹은 0보다 작을경우 빈 쿼리를 리턴합니다. prisma는 이 빈쿼리를 무시합니다.
+- lastId가 null, 0 혹은 0보다 작을경우 빈 쿼리를 리턴합니다. prisma는 이 빈쿼리를 무시합니다.
 - 정상적인 lastId가 들어온다면, lastId 보다 큰 id를 기준으로 찾도록 합니다.
 - 이 유틸함수를 단일 조건에서 사용할 때는 큰 문제없이 함수를 호출하면됩니다.
 - 그러나 여러 조건에서 사용할 때에는 필요한 조건들을 필터링한 후, 맨 마지막 조건으로 함수를 호출하는 것이 바람직합니다.
@@ -317,11 +317,38 @@ async findOptimizedPostPageByWriterId(
 }
 ```
 
+- In case you receive a query string optionally, it is also available in the optional query string.
+- Same as usual, the only difference is to declare optional in the parameter.
+
+```typescript
+async findAllOptimizedPostPageOptionalQueryString(
+    lastId?: bigint,
+): Promise<PostOptimizedPageDto> {
+    //call ltLastIdCondition function
+    const lastIdCondition = ltLastIdCondition(lastId);
+    const posts: PostPage[] = await this.prisma.post.findMany({
+      where: lastIdCondition,
+      select: { id: true, title: true, writer_id: true, created_date: true },
+      orderBy: { id: 'desc' },
+      take: PostRepoConstant.PAGE_SIZE, //The limit page size must be specified. PostRepoConstant.PAGE_SIZE = 10
+    });
+    return {
+      postPages: posts,
+      //I inserted the last id in the metadata.
+      metadata: { lastId: findLastIdOrDefault(posts) },
+    };
+}
+```
+
 ### Service
 
 ```typescript
 async getAllOptimizedPostPage(lastId: bigint) {
     return await this.postRepository.findAllOptimizedPostPage(lastId);
+}
+
+async getAllOptimizedPostPageWithOptionalQueryString(lastId?: bigint) {
+    return await this.postRepository.findAllOptimizedPostPageOptionalQueryString(lastId);
 }
 
 async getOptimizedPostPageByWriterId(writerId: string, lastId: bigint) {
@@ -337,6 +364,7 @@ async getOptimizedPostPageByWriterId(writerId: string, lastId: bigint) {
 - You must receive a query string named 'lastId'.
 - For the first page, the client does not need to use lastId in the query string.
 - Instead, set 0 as the default value for last id. In this package, last id=0 means the first page.
+- In case the default value provided by the library is not used in the constant, but is entered as optional, it is a better code style to receive explicit parameters in case there is no value than receiving implicit parameters.
 
 ```typescript
 @Get() // url : /posts
@@ -346,6 +374,15 @@ async allPosts(
     @Query(LAST_ID) lastId: bigint = DEFAULT_LAST_ID,
 ) {
     return this.postService.getAllOptimizedPostPage(lastId);
+}
+
+//optional query string
+@Get() // url : /posts-optional
+async allPosts(
+    //LAST_ID = lastId, that is optional value
+    @Query(LAST_ID) lastId?: bigint,
+) {
+    return this.postService.getAllOptimizedPostPageOptionalQueryString(lastId);
 }
 
 @Get(PostUrl.BELONG_WRITER) // url : /posts/belong/writer
@@ -485,6 +522,8 @@ async findOptimizedPostPageByWriterId(
 }
 ```
 
+- optional 파라미터를 허용합니다. optional의 경우 `?`만 붙여주면 optional로 사용할 수 있습니다.
+
 ### Service
 
 ```typescript
@@ -505,6 +544,9 @@ async getOptimizedPostPageByWriterId(writerId: string, lastId: bigint) {
 - lastId 쿼리스트링을 반드시 받아야합니다.
 - 첫번째 페이지의 경우 클라이언트는 lastId를 쿼리스트링에 사용하지 않아도 됩니다.
 - 대신 last id의 기본값으로 0을 설정해줍니다. 이 패키지에서 last id=0의 의미는 첫번째 페이지라는 의미를 지닙니다.
+- 라이브러리에서 제공하는 상수를 사용하지 않고, optional 쿼리 스트링을 입력받을 수 있습니다.
+- 그러나 암묵적인 매개변수보다는 명시적인 default value를 선언하는 것이 보다 좋은 코드 스타일입니다.
+- 따라서 라이브러리에서는 optional 쿼리스트링 보다는 명시적인 default value를 추천합니다.
 
 ```typescript
 @Get() // url : /posts
@@ -514,6 +556,14 @@ async allPosts(
     @Query(LAST_ID) lastId: bigint = DEFAULT_LAST_ID,
 ) {
     return this.postService.getAllOptimizedPostPage(lastId);
+}
+
+//optional 쿼리 스트링 사용 예제
+async allPosts(
+    //LAST_ID = lastId
+    @Query(LAST_ID) lastId?: bigint
+) {
+    return this.postService.getAllOptimizedPostPageOptionalQueryString(lastId);
 }
 
 @Get(PostUrl.BELONG_WRITER) // url : /posts/belong/writer
